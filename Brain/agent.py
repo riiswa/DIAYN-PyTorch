@@ -62,7 +62,7 @@ class SACAgent:
         state = from_numpy(state).float().to("cpu")
         z = torch.ByteTensor([z]).to("cpu")
         done = torch.BoolTensor([done]).to("cpu")
-        action = torch.Tensor([action]).to("cpu")
+        action = torch.Tensor(np.array([action])).to("cpu")
         next_state = from_numpy(next_state).float().to("cpu")
         self.memory.add(state, z, done, action, next_state)
 

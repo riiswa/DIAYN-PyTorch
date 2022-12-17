@@ -1,10 +1,10 @@
 # from mujoco_py.generated import const
-from mujoco_py import GlfwContext
+#from mujoco_py import GlfwContext
 import cv2
 import numpy as np
 import os
 
-GlfwContext(offscreen=True)
+#GlfwContext(offscreen=True)
 
 
 class Play:
