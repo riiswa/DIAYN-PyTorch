@@ -1,9 +1,10 @@
 import gym
-from Brain import SACAgent
+from Brain import SACAgent, EvolutionaryAgent
 from Common import Play, Logger, get_params
 import numpy as np
 from tqdm import tqdm
 #import mujoco_py
+import multiprocess as mp
 
 
 def concat_state_latent(s, z_, n):
@@ -29,13 +30,32 @@ if __name__ == "__main__":
 
     env = gym.make(params["env_name"])
 
+    n = 50
+    input_queue = mp.Queue(maxsize=n)
+    output_queue = mp.Queue(maxsize=n)
+    processes = []
     p_z = np.full(params["n_skills"], 1 / params["n_skills"])
-    agent = SACAgent(p_z=p_z, **params)
+    agent = EvolutionaryAgent(
+        p_z=p_z,
+        std_dev=0.05,
+        input_queue=input_queue,
+        output_queue=output_queue,
+        processes=processes,
+        n=n,
+        **params
+    )
+
+    for _ in range(mp.cpu_count()):
+        process = mp.Process(target=agent.worker, args=(input_queue, output_queue))
+        process.start()
+        processes.append(process)
+
     logger = Logger(agent, **params)
 
     if params["do_train"]:
 
         if not params["train_from_scratch"]:
+            raise NotImplemented()
             episode, last_logq_zs, np_rng_state, *env_rng_states, torch_rng_state, random_rng_state = logger.load_weights()
             agent.hard_update_target_network()
             min_episode = episode
@@ -58,6 +78,7 @@ if __name__ == "__main__":
         logger.on()
         for episode in tqdm(range(1 + min_episode, params["max_n_episodes"] + 1)):
             z = np.random.choice(params["n_skills"], p=p_z)
+            agent.train_policy(env, z)
             state = env.reset(seed=params["seed"])
             if isinstance(state, tuple):
                 state = state[0]
@@ -65,7 +86,7 @@ if __name__ == "__main__":
             episode_reward = 0
             logq_zses = []
 
-            max_n_steps = min(params["max_episode_len"], env.spec.max_episode_steps)
+            max_n_steps = params["max_episode_len"]
             for step in range(1, 1 + max_n_steps):
 
                 action = agent.choose_action(state)
@@ -82,6 +103,7 @@ if __name__ == "__main__":
                 if done:
                     break
             print(sum(logq_zses) / len(logq_zses))
+
             """
             logger.log(episode,
                        episode_reward,
@@ -95,6 +117,12 @@ if __name__ == "__main__":
                        *agent.get_rng_states(),
                        )
             """
+
+        for _ in range(n):
+            input_queue.put(None)
+
+        for process in processes:
+            process.join()
 
     else:
         logger.load_weights()

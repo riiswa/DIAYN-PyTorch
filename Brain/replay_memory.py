@@ -1,7 +1,7 @@
 import random
-from collections import namedtuple
+from recordtype import recordtype
 
-Transition = namedtuple('Transition', ('state', 'z', 'done', 'action', 'next_state'))
+Transition = recordtype('Transition', 'state z done action next_state')
 
 
 class Memory:
