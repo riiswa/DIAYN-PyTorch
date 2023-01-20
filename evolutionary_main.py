@@ -110,7 +110,7 @@ if __name__ == "__main__":
                        z,
                        sum(logq_zses) / len(logq_zses),
                        step,
-                       np.random.get_state(),
+                       np.random.get_state(), 
                        env.np_random. __getstate__(),
                        env.observation_space.np_random.__get_state__(),
                        env.action_space.np_random.__get_state__(),

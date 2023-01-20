@@ -9,6 +9,7 @@ import scipy.stats as ss
 from Brain.model import PolicyNetwork, Discriminator
 from Brain.replay_memory import Memory, Transition
 from main import concat_state_latent
+from torch.utils.tensorboard import SummaryWriter
 
 
 def normalized_rank(rewards):
@@ -23,6 +24,15 @@ def average_distance(point, points_list, k):
     _, indices = distances.sort()
     k_nearest_indices = indices[:k]
     return distances[k_nearest_indices].mean()
+
+
+class MyLogger:
+    def __init__(self):
+        self.writer = SummaryWriter()
+
+    def add_loss(self, loss):
+        self.writer.add_scalar("logq(z|s)", loss)
+
 
 
 class EvolutionaryAgent:
@@ -60,7 +70,7 @@ class EvolutionaryAgent:
         self.policy_opt = Adam(self.policy_network.parameters(), lr=0.005)
         self.discriminator_opt = Adam(self.discriminator.parameters(), lr=self.config["lr"])
 
-        self.archive = deque([], maxlen=self.n_skills*2)
+        self.archive = deque([], maxlen=self.n_skills * 2)
         self.z_archive = deque([], maxlen=self.n_skills * 2)
 
     def choose_action(self, states):
@@ -134,8 +144,8 @@ class EvolutionaryAgent:
             next_state, reward, done = env.step(action)[:3]
             with torch.no_grad():
                 episode_reward += self.intrinsic_reward(z, next_state)
-            #print(done)
-            #if done:
+            # print(done)
+            # if done:
             #    break
             final_state = next_state
             state = concat_state_latent(next_state, z, self.n_skills)
