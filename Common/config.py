@@ -23,10 +23,10 @@ def get_params():
 
     #  Parameters based on the DIAYN and SAC papers.
     # region default parameters
-    default_params = {"lr": 0.001,
+    default_params = {"lr": 3e-4,
                       "batch_size": 256,
-                      "max_n_episodes": 500,
-                      "max_episode_len": 1000,
+                      "max_n_episodes": 2000,
+                      "max_episode_len": 300,
                       "gamma": 0.99,
                       "alpha": 0.1,
                       "tau": 0.005,

@@ -1,9 +1,11 @@
-import gym
-from Brain import SACAgent, EvolutionaryAgent
-from Common import Play, Logger, get_params
+import gymnasium as gym
+import torch
+from matplotlib import pyplot as plt
+
+from Brain import EvolutionaryAgent
+from Common import Play, get_params
 import numpy as np
 from tqdm import tqdm
-#import mujoco_py
 import multiprocess as mp
 
 
@@ -50,32 +52,16 @@ if __name__ == "__main__":
         process.start()
         processes.append(process)
 
-    logger = Logger(agent, **params)
-
     if params["do_train"]:
 
-        if not params["train_from_scratch"]:
-            raise NotImplemented()
-            episode, last_logq_zs, np_rng_state, *env_rng_states, torch_rng_state, random_rng_state = logger.load_weights()
-            agent.hard_update_target_network()
-            min_episode = episode
-            np.random.set_state(np_rng_state)
-            env.np_random.set_state(env_rng_states[0])
-            env.observation_space.np_random.set_state(env_rng_states[1])
-            env.action_space.np_random.set_state(env_rng_states[2])
-            agent.set_rng_states(torch_rng_state, random_rng_state)
-            print("Keep training from previous run.")
+        min_episode = 0
+        last_logq_zs = 0
+        np.random.seed(params["seed"])
+        #env.seed(params["seed"])
+        env.observation_space.seed(params["seed"])
+        env.action_space.seed(params["seed"])
+        print("Training from scratch.")
 
-        else:
-            min_episode = 0
-            last_logq_zs = 0
-            np.random.seed(params["seed"])
-            #env.seed(params["seed"])
-            env.observation_space.seed(params["seed"])
-            env.action_space.seed(params["seed"])
-            print("Training from scratch.")
-
-        logger.on()
         for episode in tqdm(range(1 + min_episode, params["max_n_episodes"] + 1)):
             z = np.random.choice(params["n_skills"], p=p_z)
             agent.train_policy(env, z)
@@ -88,9 +74,9 @@ if __name__ == "__main__":
 
             max_n_steps = params["max_episode_len"]
             for step in range(1, 1 + max_n_steps):
-
                 action = agent.choose_action(state)
                 next_state, reward, done = env.step(action)[:3]
+                final_state = next_state
                 next_state = concat_state_latent(next_state, z, params["n_skills"])
                 agent.store(state, z, done, action, next_state)
                 logq_zs = agent.train()
@@ -102,21 +88,28 @@ if __name__ == "__main__":
                 state = next_state
                 if done:
                     break
+            agent.archive.append(torch.from_numpy(final_state[:2]))
+            agent.z_archive.append(z)
             print(sum(logq_zses) / len(logq_zses))
 
-            """
-            logger.log(episode,
-                       episode_reward,
-                       z,
-                       sum(logq_zses) / len(logq_zses),
-                       step,
-                       np.random.get_state(), 
-                       env.np_random. __getstate__(),
-                       env.observation_space.np_random.__get_state__(),
-                       env.action_space.np_random.__get_state__(),
-                       *agent.get_rng_states(),
-                       )
-            """
+            if episode % 10 == 0:
+                trajectories = []
+                for z in range(params["n_skills"]):
+                    state = env.reset(seed=params["seed"])
+                    state = concat_state_latent(state, z, params["n_skills"])
+                    max_n_steps = 100
+                    trajectory = []
+                    for step in range(1, 1 + max_n_steps):
+                        action = agent.choose_action(state)
+                        next_state, reward, done = env.step(action)[:3]
+                        trajectory.append(next_state[:2])
+                        next_state = concat_state_latent(next_state, z, params["n_skills"])
+                        state = next_state
+                        if done:
+                            break
+                    trajectories.append(trajectory)
+
+                plt.close()
 
         for _ in range(n):
             input_queue.put(None)
@@ -125,6 +118,5 @@ if __name__ == "__main__":
             process.join()
 
     else:
-        logger.load_weights()
         player = Play(env, agent, n_skills=params["n_skills"])
         player.evaluate()
