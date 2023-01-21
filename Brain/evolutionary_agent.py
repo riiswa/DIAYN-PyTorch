@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def normalized_rank(rewards):
-    ranked = ss.rankdata(rewards)
+    ranked = ss.rankdata(rewards.cpu())
     norm = (ranked - 1) / (len(ranked) - 1)
     norm -= 0.5
     return norm
