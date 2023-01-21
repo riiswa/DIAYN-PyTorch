@@ -6,7 +6,7 @@ from Brain import EvolutionaryAgent
 from Common import Play, get_params
 import numpy as np
 from tqdm import tqdm
-import multiprocess as mp
+import torch.multiprocessing as mp
 
 
 def concat_state_latent(s, z_, n):
@@ -16,6 +16,7 @@ def concat_state_latent(s, z_, n):
 
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn')
     params = get_params()
 
     test_env = gym.make("Ant-v4", exclude_current_positions_from_observation=False)
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         n=n,
         **params
     )
-    mp.set_start_method('spawn')
+
     for _ in range(mp.cpu_count()):
         process = mp.Process(target=agent.worker, args=(input_queue, output_queue))
         process.start()
