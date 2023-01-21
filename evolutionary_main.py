@@ -46,7 +46,7 @@ if __name__ == "__main__":
         n=n,
         **params
     )
-
+    mp.set_start_method('spawn')
     for _ in range(mp.cpu_count()):
         process = mp.Process(target=agent.worker, args=(input_queue, output_queue))
         process.start()
