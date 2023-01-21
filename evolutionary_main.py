@@ -6,7 +6,7 @@ from Brain import EvolutionaryAgent
 from Common import Play, get_params
 import numpy as np
 from tqdm import tqdm
-import torch.multiprocessing as mp
+import multiprocess as mp
 
 
 def concat_state_latent(s, z_, n):
