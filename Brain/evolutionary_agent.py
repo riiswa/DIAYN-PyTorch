@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def normalized_rank(rewards):
-    ranked = ss.rankdata(rewards.cpu())
+    ranked = ss.rankdata(rewards)
     norm = (ranked - 1) / (len(ranked) - 1)
     norm -= 0.5
     return norm
@@ -142,7 +142,7 @@ class EvolutionaryAgent:
             action = self.choose_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
             with torch.no_grad():
-                episode_reward += self.intrinsic_reward(z, next_state)
+                episode_reward += self.intrinsic_reward(z, next_state).cpu()
             if terminated or truncated:
                 break
             final_state = next_state
