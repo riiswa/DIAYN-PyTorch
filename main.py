@@ -16,7 +16,7 @@ def concat_state_latent(s, z_, n):
 if __name__ == "__main__":
     params = get_params()
 
-    test_env = gym.make(params["env_name"])
+    test_env = gym.make("Ant-v4", exclude_current_positions_from_observation=False)
     n_states = test_env.observation_space.shape[0]
     n_actions = test_env.action_space.shape[0]
     action_bounds = [test_env.action_space.low[0], test_env.action_space.high[0]]
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     test_env.close()
     del test_env, n_states, n_actions, action_bounds
 
-    env = gym.make(params["env_name"])
+    env = gym.make("Ant-v4", exclude_current_positions_from_observation=False)
 
     p_z = np.full(params["n_skills"], 1 / params["n_skills"])
     agent = SACAgent(p_z=p_z, **params)
@@ -53,12 +53,12 @@ if __name__ == "__main__":
             episode_reward = 0
             logq_zses = []
 
-            max_n_steps = 100
+            max_n_steps = 500
             for step in range(1, 1 + max_n_steps):
                 action = agent.choose_action(state)
-                next_state, reward, done = env.step(action)[:3]
+                next_state, reward, terminated, truncated, info = env.step(action)[:3]
                 next_state = concat_state_latent(next_state, z, params["n_skills"])
-                agent.store(state, z, done, action, next_state)
+                agent.store(state, z, terminated or truncated, action, next_state)
                 logq_zs = agent.train()
                 if logq_zs is None:
                     logq_zses.append(last_logq_zs)
@@ -66,7 +66,7 @@ if __name__ == "__main__":
                     logq_zses.append(logq_zs)
                 episode_reward += reward
                 state = next_state
-                if done:
+                if terminated or truncated:
                     break
             print(sum(logq_zses) / len(logq_zses))
 

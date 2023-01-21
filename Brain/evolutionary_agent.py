@@ -133,20 +133,19 @@ class EvolutionaryAgent:
                torch.log(torch.tensor(1 / self.n_skills))
 
     def evaluate(self, env, z):
-        state = env.reset(seed=self.config["seed"])
+        state, info = env.reset(seed=self.config["seed"])
         if isinstance(state, tuple):
             state = state[0]
         state = concat_state_latent(state, z, self.n_skills)
         episode_reward = 0
-        max_n_steps = 100
+        max_n_steps = 500
         for step in range(1, 1 + max_n_steps):
             action = self.choose_action(state)
-            next_state, reward, done = env.step(action)[:3]
+            next_state, reward, terminated, truncated, info = env.step(action)[:3]
             with torch.no_grad():
                 episode_reward += self.intrinsic_reward(z, next_state)
-            # print(done)
-            # if done:
-            #    break
+            if terminated or truncated:
+                break
             final_state = next_state
             state = concat_state_latent(next_state, z, self.n_skills)
 
