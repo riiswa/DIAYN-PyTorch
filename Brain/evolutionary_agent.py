@@ -199,6 +199,6 @@ class EvolutionaryAgent:
             for noise, reward in zip(noises, rewards):
                 upd_weights += reward * noise[idx]
             upd_weights = upd_weights / (self.n * self.std_dev)
-            weight.grad = (-upd_weights).float()
+            weight.grad = (-upd_weights).float().to(weight.device)
 
         self.policy_opt.step()
