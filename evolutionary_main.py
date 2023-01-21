@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     env = gym.make("Ant-v4", exclude_current_positions_from_observation=False)
 
-    n = 50
+    n = 500
     input_queue = mp.Queue(maxsize=n)
     output_queue = mp.Queue(maxsize=n)
     processes = []
