@@ -141,7 +141,7 @@ class EvolutionaryAgent:
         max_n_steps = 500
         for step in range(1, 1 + max_n_steps):
             action = self.choose_action(state)
-            next_state, reward, terminated, truncated, info = env.step(action)[:3]
+            next_state, reward, terminated, truncated, info = env.step(action)
             with torch.no_grad():
                 episode_reward += self.intrinsic_reward(z, next_state)
             if terminated or truncated:

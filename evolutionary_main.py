@@ -74,7 +74,7 @@ if __name__ == "__main__":
             max_n_steps = 500
             for step in range(1, 1 + max_n_steps):
                 action = agent.choose_action(state)
-                next_state, reward, terminated, truncated, info = env.step(action)[:3]
+                next_state, reward, terminated, truncated, info = env.step(action)
                 final_state = next_state
                 next_state = concat_state_latent(next_state, z, params["n_skills"])
                 agent.store(state, z, terminated or truncated, action, next_state)
