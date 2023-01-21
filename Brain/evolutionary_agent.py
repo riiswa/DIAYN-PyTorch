@@ -34,7 +34,6 @@ class MyLogger:
         self.writer.add_scalar("logq(z|s)", loss)
 
 
-
 class EvolutionaryAgent:
     def __init__(self,
                  p_z,
@@ -123,7 +122,7 @@ class EvolutionaryAgent:
 
     def policy_noise(self):
         return np.array(
-            [torch.normal(0, 1, size=param.data.size()) for param in self.policy_network.parameters()],
+            [torch.normal(0, 1, size=param.data.size()).to(self.device) for param in self.policy_network.parameters()],
             dtype=object
         )
 
