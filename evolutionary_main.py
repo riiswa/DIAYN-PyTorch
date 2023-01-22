@@ -43,7 +43,7 @@ if __name__ == "__main__":
         **params
     )
 
-    writer = SummaryWriter(log_dir="runs", comment="EDIAYN")
+    writer = SummaryWriter(log_dir="results/e-diayn")
 
     for _ in range(mp.cpu_count()):
         process = mp.Process(target=agent.worker, args=(input_queue, output_queue))

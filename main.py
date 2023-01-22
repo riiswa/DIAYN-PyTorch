@@ -29,7 +29,7 @@ if __name__ == "__main__":
     p_z = np.full(params["n_skills"], 1 / params["n_skills"])
     agent = SACAgent(p_z=p_z, **params)
 
-    writer = SummaryWriter(log_dir="runs", comment="DIAYN")
+    writer = SummaryWriter(log_dir="results/diayn")
 
     if params["do_train"]:
         min_episode = 0
