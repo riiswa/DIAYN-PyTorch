@@ -29,8 +29,6 @@ if __name__ == "__main__":
     p_z = np.full(params["n_skills"], 1 / params["n_skills"])
     agent = SACAgent(p_z=p_z, **params)
 
-    writer = SummaryWriter(log_dir="results/diayn")
-
     if params["do_train"]:
         min_episode = 0
         last_logq_zs = 0
@@ -38,6 +36,8 @@ if __name__ == "__main__":
         env.observation_space.seed(params["seed"])
         env.action_space.seed(params["seed"])
         print("Training from scratch.")
+
+        writer = SummaryWriter(log_dir="results/diayn")
 
         evaluate_agent(params, env, agent, writer, 0)
 

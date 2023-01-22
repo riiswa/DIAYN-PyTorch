@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     env = gym.make("Ant-v4", exclude_current_positions_from_observation=False)
 
-    n = 50
+    n = 500
     input_queue = mp.Queue(maxsize=n)
     output_queue = mp.Queue(maxsize=n)
     processes = []
@@ -43,8 +43,6 @@ if __name__ == "__main__":
         **params
     )
 
-    writer = SummaryWriter(log_dir="results/e-diayn-2")
-
     for _ in range(mp.cpu_count()):
         process = mp.Process(target=agent.worker, args=(input_queue, output_queue))
         process.start()
@@ -58,6 +56,8 @@ if __name__ == "__main__":
         env.observation_space.seed(params["seed"])
         env.action_space.seed(params["seed"])
         print("Training from scratch.")
+
+        writer = SummaryWriter(log_dir="results/e-diayn-2")
 
         evaluate_agent(params, env, agent, writer, 0)
 
