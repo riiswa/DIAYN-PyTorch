@@ -129,7 +129,7 @@ class EvolutionaryAgent:
             state = state[0]
         state = concat_state_latent(state, z, self.n_skills)
         episode_reward = 0
-        max_n_steps = 500
+        max_n_steps = 250
         for step in range(1, 1 + max_n_steps):
             action = self.choose_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)

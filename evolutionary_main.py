@@ -69,7 +69,7 @@ if __name__ == "__main__":
             episode_reward = 0
             logq_zses = []
 
-            max_n_steps = 500
+            max_n_steps = 250
             for step in range(1, 1 + max_n_steps):
                 action = agent.choose_action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
