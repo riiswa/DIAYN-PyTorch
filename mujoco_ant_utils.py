@@ -49,7 +49,7 @@ def plot_trajectories(trajectories, b=5):
     return fig
 
 
-def evaluate_agent(params, env, agent, writer: SummaryWriter, step):
+def evaluate_agent(params, env, agent, writer: SummaryWriter, episode):
     trajectories = []
     for z in range(params["n_skills"]):
         state, info = env.reset(seed=params["seed"])
@@ -67,7 +67,7 @@ def evaluate_agent(params, env, agent, writer: SummaryWriter, step):
                 break
         trajectories.append(trajectory)
 
-    writer.add_scalar("coverage", coverage(trajectories), global_step=step)
-    writer.add_figure("trajectories", plot_trajectories(trajectories), global_step=step)
+    writer.add_scalar("coverage", coverage(trajectories), global_step=episode)
+    writer.add_figure("trajectories", plot_trajectories(trajectories), global_step=episode)
 
     plt.close()
