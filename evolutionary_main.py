@@ -1,12 +1,14 @@
 import gymnasium as gym
 import torch
-from matplotlib import pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
 
 from Brain import EvolutionaryAgent
 from Common import Play, get_params
 import numpy as np
 from tqdm import tqdm
 import multiprocess as mp
+
+from mujoco_ant_utils import check_bounds, evaluate_agent
 
 
 def concat_state_latent(s, z_, n):
@@ -48,6 +50,8 @@ if __name__ == "__main__":
         **params
     )
 
+    writer = SummaryWriter(log_dir="runs", comment="EDIAYN")
+
     for _ in range(mp.cpu_count()):
         process = mp.Process(target=agent.worker, args=(input_queue, output_queue))
         process.start()
@@ -76,6 +80,7 @@ if __name__ == "__main__":
             for step in range(1, 1 + max_n_steps):
                 action = agent.choose_action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
+                truncated = truncated or not check_bounds(next_state[:2])
                 final_state = next_state
                 next_state = concat_state_latent(next_state, z, params["n_skills"])
                 agent.store(state, z, terminated or truncated, action, next_state)
@@ -90,27 +95,13 @@ if __name__ == "__main__":
                     break
             agent.archive.append(torch.from_numpy(final_state[:2]))
             agent.z_archive.append(z)
-            print(sum(logq_zses) / len(logq_zses))
 
-            #
-            # if episode % 10 == 0:
-            #     trajectories = []
-            #     for z in range(params["n_skills"]):
-            #         state, info  = env.reset(seed=params["seed"])
-            #         state = concat_state_latent(state, z, params["n_skills"])
-            #         max_n_steps = 100
-            #         trajectory = []
-            #         for step in range(1, 1 + max_n_steps):
-            #             action = agent.choose_action(state)
-            #             next_state, reward, done = env.step(action)[:3]
-            #             trajectory.append(next_state[:2])
-            #             next_state = concat_state_latent(next_state, z, params["n_skills"])
-            #             state = next_state
-            #             if done:
-            #                 break
-            #         trajectories.append(trajectory)
-            #
-            #     plt.close()
+            writer.add_scalar("loss", sum(logq_zses) / len(logq_zses), global_step=episode)
+
+            if episode % 10 == 0:
+                evaluate_agent(params, env, agent, writer, episode)
+
+        writer.close()
 
         for _ in range(n):
             input_queue.put(None)

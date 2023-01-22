@@ -11,6 +11,8 @@ from Brain.replay_memory import Memory, Transition
 from main import concat_state_latent
 from torch.utils.tensorboard import SummaryWriter
 
+from mujoco_ant_utils import check_bounds
+
 
 def normalized_rank(rewards):
     ranked = ss.rankdata(rewards)
@@ -24,14 +26,6 @@ def average_distance(point, points_list, k):
     _, indices = distances.sort()
     k_nearest_indices = indices[:k]
     return distances[k_nearest_indices].mean()
-
-
-class MyLogger:
-    def __init__(self):
-        self.writer = SummaryWriter()
-
-    def add_loss(self, loss):
-        self.writer.add_scalar("logq(z|s)", loss)
 
 
 class EvolutionaryAgent:
@@ -141,6 +135,7 @@ class EvolutionaryAgent:
         for step in range(1, 1 + max_n_steps):
             action = self.choose_action(state)
             next_state, reward, terminated, truncated, info = env.step(action)
+            truncated = truncated or not check_bounds(next_state[:2])
             with torch.no_grad():
                 episode_reward += self.intrinsic_reward(z, next_state).cpu()
             if terminated or truncated:

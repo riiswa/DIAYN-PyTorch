@@ -1,10 +1,13 @@
 import gymnasium as gym
-from matplotlib import pyplot as plt
+
+from torch.utils.tensorboard import SummaryWriter
 
 from Brain import SACAgent
 from Common import Play, get_params
 import numpy as np
 from tqdm import tqdm
+
+from mujoco_ant_utils import check_bounds, evaluate_agent
 
 
 def concat_state_latent(s, z_, n):
@@ -33,13 +36,12 @@ if __name__ == "__main__":
     p_z = np.full(params["n_skills"], 1 / params["n_skills"])
     agent = SACAgent(p_z=p_z, **params)
 
+    writer = SummaryWriter(log_dir="runs", comment="DIAYN")
+
     if params["do_train"]:
-
-
         min_episode = 0
         last_logq_zs = 0
         np.random.seed(params["seed"])
-        #env.seed(params["seed"])
         env.observation_space.seed(params["seed"])
         env.action_space.seed(params["seed"])
         print("Training from scratch.")
@@ -57,7 +59,7 @@ if __name__ == "__main__":
             for step in range(1, 1 + max_n_steps):
                 action = agent.choose_action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
-                print(next_state[:2])
+                truncated = truncated or not check_bounds(next_state[:2])
                 next_state = concat_state_latent(next_state, z, params["n_skills"])
                 agent.store(state, z, terminated or truncated, action, next_state)
                 logq_zs = agent.train()
@@ -69,26 +71,12 @@ if __name__ == "__main__":
                 state = next_state
                 if terminated or truncated:
                     break
-            print(sum(logq_zses) / len(logq_zses))
 
-            # if episode % 10 == 0:
-            #     trajectories = []
-            #     for z in range(params["n_skills"]):
-            #         state = env.reset(seed=params["seed"])
-            #         state = concat_state_latent(state, z, params["n_skills"])
-            #         max_n_steps = 100
-            #         trajectory = []
-            #         for step in range(1, 1 + max_n_steps):
-            #             action = agent.choose_action(state)
-            #             next_state, reward, terminated, truncated, info = env.step(action)
-            #             trajectory.append(next_state[:2])
-            #             next_state = concat_state_latent(next_state, z, params["n_skills"])
-            #             state = next_state
-            #             if terminated or truncated:
-            #                 break
-            #         trajectories.append(trajectory)
-            #
-            #     plt.close()
+            writer.add_scalar("loss", sum(logq_zses) / len(logq_zses), global_step=episode)
+
+            if episode % 10 == 0:
+                evaluate_agent(params, env, agent, writer, episode)
+        writer.close()
 
     else:
         player = Play(env, agent, n_skills=params["n_skills"])
