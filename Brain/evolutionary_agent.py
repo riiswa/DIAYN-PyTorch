@@ -8,10 +8,8 @@ import scipy.stats as ss
 
 from Brain.model import PolicyNetwork, Discriminator
 from Brain.replay_memory import Memory, Transition
-from main import concat_state_latent
-from torch.utils.tensorboard import SummaryWriter
 
-from mujoco_ant_utils import check_bounds
+from mujoco_ant_utils import check_bounds, concat_state_latent
 
 
 def normalized_rank(rewards):

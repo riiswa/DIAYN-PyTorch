@@ -2,9 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 
-from main import concat_state_latent
-
 from torch.utils.tensorboard import SummaryWriter
+
+
+def concat_state_latent(s, z_, n):
+    z_one_hot = np.zeros(n)
+    z_one_hot[z_] = 1
+    return np.concatenate([s, z_one_hot])
 
 
 def check_bounds(coords, b=5):
@@ -67,4 +71,3 @@ def evaluate_agent(params, env, agent, writer: SummaryWriter, step):
     writer.add_figure("trajectories", plot_trajectories(trajectories), global_step=step)
 
     plt.close()
-

@@ -7,14 +7,7 @@ from Common import Play, get_params
 import numpy as np
 from tqdm import tqdm
 
-from mujoco_ant_utils import check_bounds, evaluate_agent
-
-
-def concat_state_latent(s, z_, n):
-    z_one_hot = np.zeros(n)
-    z_one_hot[z_] = 1
-    return np.concatenate([s, z_one_hot])
-
+from mujoco_ant_utils import check_bounds, evaluate_agent, concat_state_latent
 
 if __name__ == "__main__":
     params = get_params()

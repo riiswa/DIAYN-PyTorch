@@ -8,14 +8,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocess as mp
 
-from mujoco_ant_utils import check_bounds, evaluate_agent
-
-
-def concat_state_latent(s, z_, n):
-    z_one_hot = np.zeros(n)
-    z_one_hot[z_] = 1
-    return np.concatenate([s, z_one_hot])
-
+from mujoco_ant_utils import check_bounds, evaluate_agent, concat_state_latent
 
 if __name__ == "__main__":
     mp.set_start_method('spawn')
@@ -69,7 +62,7 @@ if __name__ == "__main__":
         for episode in tqdm(range(1 + min_episode, params["max_n_episodes"] + 1)):
             z = np.random.choice(params["n_skills"], p=p_z)
             agent.train_policy(env, z)
-            state, info  = env.reset(seed=params["seed"])
+            state, info = env.reset(seed=params["seed"])
             if isinstance(state, tuple):
                 state = state[0]
             state = concat_state_latent(state, z, params["n_skills"])
