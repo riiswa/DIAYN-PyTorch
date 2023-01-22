@@ -54,7 +54,7 @@ def evaluate_agent(params, env, agent, writer: SummaryWriter, episode):
     for z in range(params["n_skills"]):
         state, info = env.reset(seed=params["seed"])
         state = concat_state_latent(state, z, params["n_skills"])
-        max_n_steps = 250
+        max_n_steps = 500
         trajectory = []
         for step in range(1, 1 + max_n_steps):
             action = agent.choose_action(state)
