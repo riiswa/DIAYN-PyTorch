@@ -33,18 +33,18 @@ def coverage(trajectories, b=5):
 
 
 def plot_trajectories(trajectories, b=5):
-    fig = plt.figure(figsize=(14, 14))
+    fig = plt.figure(figsize=(12, 12))
     for trajectory in trajectories:
         # Create a scatter plot of the points
         plt.plot(*zip(*trajectory), alpha=0.7)
         plt.scatter(*zip(*trajectory), alpha=0.7)
 
         # Remove the axes and grid
-        # plt.axis('off')
+        plt.axis('off')
         plt.grid(False)
 
-        plt.xlim(-5, 5)
-        plt.ylim(-5, 5)
+        plt.xlim(-b, b)
+        plt.ylim(-b, b)
 
     return fig
 

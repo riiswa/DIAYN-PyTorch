@@ -39,6 +39,8 @@ if __name__ == "__main__":
         env.action_space.seed(params["seed"])
         print("Training from scratch.")
 
+        evaluate_agent(params, env, agent, writer, 0)
+
         for episode in tqdm(range(1 + min_episode, params["max_n_episodes"] + 1)):
             z = np.random.choice(params["n_skills"], p=p_z)
             state, info = env.reset(seed=params["seed"])
@@ -67,7 +69,7 @@ if __name__ == "__main__":
 
             writer.add_scalar("loss", sum(logq_zses) / len(logq_zses), global_step=episode)
 
-            if episode % 10 == 0:
+            if episode % 5 == 0:
                 evaluate_agent(params, env, agent, writer, episode)
         writer.close()
 
