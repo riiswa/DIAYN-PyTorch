@@ -35,7 +35,7 @@ if __name__ == "__main__":
     p_z = np.full(params["n_skills"], 1 / params["n_skills"])
     agent = EvolutionaryAgent(
         p_z=p_z,
-        std_dev=0.05,
+        std_dev=0.1,
         input_queue=input_queue,
         output_queue=output_queue,
         processes=processes,

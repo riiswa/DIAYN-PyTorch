@@ -58,7 +58,7 @@ class EvolutionaryAgent:
                                            n_hidden_filters=self.config["n_hiddens"]).to(self.device)
 
         self.cross_ent_loss = torch.nn.CrossEntropyLoss()
-        self.policy_opt = Adam(self.policy_network.parameters(), lr=0.005)
+        self.policy_opt = Adam(self.policy_network.parameters(), lr=0.01)
         self.discriminator_opt = Adam(self.discriminator.parameters(), lr=self.config["lr"])
 
         self.archive = deque([], maxlen=self.n_skills * 2)
