@@ -16,17 +16,17 @@ def get_params():
     parser.add_argument("--mem_size", default=int(1e+6), type=int, help="The memory size.")
     parser.add_argument("--n_skills", default=50, type=int, help="The number of skills to learn.")
     parser.add_argument("--reward_scale", default=1, type=float, help="The reward scaling factor introduced in SAC.")
-    parser.add_argument("--seed", default=123, type=int,
+    parser.add_argument("--seed", default=42, type=int,
                         help="The randomness' seed for torch, numpy, random & gym[env].")
 
     parser_params = parser.parse_args()
 
     #  Parameters based on the DIAYN and SAC papers.
     # region default parameters
-    default_params = {"lr": 0.001,
+    default_params = {"lr": 3e-4,
                       "batch_size": 256,
-                      "max_n_episodes": 500,
-                      "max_episode_len": 1000,
+                      "max_n_episodes": 2000,
+                      "max_episode_len": 300,
                       "gamma": 0.99,
                       "alpha": 0.1,
                       "tau": 0.005,
